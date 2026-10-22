@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Can your workflow survive a replay?</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#17303a;background:#f5f4ef;line-height:1.55}*{box-sizing:border-box}body{margin:0}header{background:#17303a;color:#fff;padding:48px max(24px,calc((100vw - 1120px)/2))}header p{max-width:720px;color:#d0e2e5}h1{font-size:clamp(2rem,4vw,3.4rem);line-height:1.12;margin:12px 0 22px;max-width:800px;letter-spacing:-.04em}.eyebrow{font-size:.8rem;text-transform:uppercase;letter-spacing:.14em;color:#a8e0c9}main{max-width:1168px;margin:auto;padding:28px 24px 60px}nav{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}button,a.action{font:inherit;border:1px solid #17303a;border-radius:8px;padding:10px 16px;cursor:pointer;background:white;color:#17303a}button[aria-pressed="true"],button.primary{background:#17303a;color:white}.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}.card{background:white;padding:24px;border:1px solid #d9ded9;border-radius:14px}h2{margin:0 0 12px;font-size:1.3rem}h3{font-size:1rem}p{margin:12px 0}ol{padding-left:22px}li{margin-bottom:8px}pre{overflow:auto;background:#eff4f1;padding:16px;border-radius:8px;font-size:.84rem;line-height:1.65;color:#183e31}label{display:block;font-weight:650;margin-top:18px}input{width:100%;padding:12px;border:1px solid #8b999b;border-radius:6px;font:inherit;margin:6px 0}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #c06b20;outline-offset:3px}#result{white-space:pre-line;padding:14px;border-left:4px solid #627777;background:#f3f5f4;margin-top:16px}#result.good{border-color:#147849;background:#e8f6ed}#result.bad{border-color:#a84a24;background:#fff1e9}.muted{font-size:.86rem;color:#53646a}.return{margin-top:24px;background:#e5eee9}details{margin-top:20px}summary{cursor:pointer;font-weight:650}footer{border-top:1px solid #cad1cc;margin-top:28px;padding-top:16px;font-size:.86rem}a{color:#155c52}.badge{font-size:.8rem;padding:4px 9px;border:1px solid #8b999b;border-radius:20px;display:inline-block;margin-bottom:10px}@media(max-width:760px){.grid{grid-template-columns:1fr}header{padding:32px 24px}.card{padding:20px}}@media print{button,nav{display:none}header{background:white;color:#17303a;padding:20px}header p{color:#17303a}main{padding:0}.grid{display:block}.card{break-inside:avoid;margin-bottom:16px}}
+</style></head><body>
+<header><span class="eyebrow">Artificial intelligence · Workflow lab</span><h1>Can your workflow<br>survive a replay?</h1><p>Build a ticket follow-up list. Then send it duplicate events and old updates. Two rounds, fictional data, and a checkable answer.</p></header>
+<main><nav aria-label="Exercise rounds"><button id="round1" aria-pressed="true">Round 1 · Build and replay</button><button id="round2" aria-pressed="false">Round 2 · Return and revise</button></nav>
+<div class="grid"><section class="card"><span class="badge" id="roundBadge">Round 1</span><h2>Make the current follow-up list</h2><ol><li>Process an exact repeated <code>event_id</code> once.</li><li>Use the greatest numeric <code>revision</code> for each ticket. Arrival order is irrelevant.</li><li>Current <b>Open</b> → follow up. <b>Closed</b> → exclude. Blank or anything else → review.</li><li>Conflicting copies of an event, or conflicting statuses at the same ticket revision, are input errors. Stop and resolve them.</li></ol><p id="roundNote">Use a spreadsheet, no-code tool, script or AI assistant. Run the same input twice and compare the ticket lists.</p><h3 id="dataTitle">Round 1 input</h3><pre id="data"></pre><button id="download">Download this CSV</button></section>
+<section class="card"><h2>Check your output</h2><p>Run your method first, then enter its ticket IDs. The checker compares your answer; it does not execute your workflow.</p><label for="followUp">Follow-up IDs</label><input id="followUp" placeholder="For example: T01, T02" autocomplete="off" spellcheck="false"><label for="review">IDs needing review</label><input id="review" placeholder="Leave blank if none" autocomplete="off" spellcheck="false"><p class="muted">Separate IDs with commas or spaces. Order does not matter. Duplicates do.</p><button class="primary" id="check">Check my result</button><div id="result" role="status" aria-live="polite">Your result stays in this page. Nothing is submitted.</div><details><summary>Show the answer and explanation</summary><div id="answer"></div></details><p class="muted">This checks a small batch exercise. It does not prove safe retries for production writes or messages, or validate a particular AI tool.</p></section></div>
+<section class="card return"><h2>Bring back one change on another day</h2><p>Save your first result. On a later day, try Round 2 with the combined history, then compare the result or one failure with another person. Both rounds are available now.</p><pre>Round / tool or method:
+Actual follow-up IDs / review IDs:
+What broke or surprised me:
+One change I made / one question for a peer:</pre><p>You can discuss it where you found the exercise. If you want to compare AI-assisted workflows in our artificial intelligence Discord, <a href="https://discord.gg/artificialintelligence" target="_blank" rel="noopener noreferrer">join the conversation</a>. Joining is optional.</p></section>
+<footer>Fictional records. No account, analytics, external libraries or saved responses. The optional Discord link opens an external site. Original exercise and code: MIT license. Local exercise preview; no hosted publication is implied.</footer></main>
+<script>/* Standalone educational fixture evaluator. No network or storage. */
+(function (root) {
+  'use strict';
+  function evaluate(csv) {
+    const lines = csv.trim().replace(/\r/g, '').split('\n');
+    if (lines.shift() !== 'event_id,ticket_id,revision,status') throw new Error('Use the supplied four-column CSV header.');
+    const events = new Map();
+    for (const [index, line] of lines.entries()) {
+      const fields = line.split(',');
+      if (fields.length !== 4) throw new Error(`Row ${index + 2}: expected four plain CSV fields.`);
+      const [event, ticket, version, status] = fields.map(x => x.trim());
+      if (!/^E\d+$/.test(event) || !/^T\d+$/.test(ticket) || !/^[1-9]\d*$/.test(version) || !Number.isSafeInteger(Number(version))) {
+        throw new Error(`Row ${index + 2}: invalid event, ticket or revision.`);
+      }
+      const row = {event, ticket, revision: Number(version), status};
+      if (events.has(event) && JSON.stringify(events.get(event)) !== JSON.stringify(row)) {
+        throw new Error(`Conflicting payload for ${event}; resolve it before processing.`);
+      }
+      events.set(event, row);
+    }
+    const revisions = new Map();
+    const latest = new Map();
+    for (const row of events.values()) {
+      const key = `${row.ticket}:${row.revision}`;
+      if (revisions.has(key) && revisions.get(key) !== row.status) throw new Error(`Conflicting status at ${key}; resolve it before processing.`);
+      revisions.set(key, row.status);
+      if (!latest.has(row.ticket) || latest.get(row.ticket).revision < row.revision) latest.set(row.ticket, row);
+    }
+    const followUp = [], review = [];
+    for (const row of latest.values()) {
+      if (row.status === 'Open') followUp.push(row.ticket);
+      else if (row.status !== 'Closed') review.push(row.ticket);
+    }
+    return {followUp: followUp.sort(), review: review.sort(), uniqueEvents: events.size, duplicateDeliveries: lines.length - events.size};
+  }
+  function compareIds(answer, expected) {
+    const ids = answer.trim() ? answer.trim().toUpperCase().split(/[\s,]+/) : [];
+    const duplicates = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
+    const missing = expected.filter(id => !ids.includes(id));
+    const extra = [...new Set(ids.filter(id => !expected.includes(id)))];
+    return {pass: !duplicates.length && !missing.length && !extra.length, duplicates, missing, extra};
+  }
+  const api = {evaluate, compareIds};
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.ReplayExercise = api;
+})(typeof globalThis === 'undefined' ? this : globalThis);
+</script>
+<script>
+const first="event_id,ticket_id,revision,status\nE01,T01,1,Open\nE02,T02,1,Open\nE03,T01,2,Closed\nE04,T03,1,Open\nE02,T02,1,Open\nE05,T01,1,Open\nE06,T04,1,\nE07,T05,1,Pending\nE08,T06,1,Closed", additions="event_id,ticket_id,revision,status\nE09,T02,2,Closed\nE10,T03,2,Closed\nE11,T07,1,Open\nE11,T07,1,Open\nE12,T01,3,Open\nE13,T04,2,Closed\nE14,T05,2,Open";
+const combined=first+'\n'+additions.split('\n').slice(1).join('\n');
+let round=1;
+const $=id=>document.getElementById(id);
+function render(){
+ $('round1').setAttribute('aria-pressed',String(round===1));$('round2').setAttribute('aria-pressed',String(round===2));
+ $('roundBadge').textContent='Round '+round;
+ $('dataTitle').textContent=round===1?'Round 1 input':'Round 2 input · full combined history';
+ $('data').textContent=round===1?first:combined;
+ $('roundNote').textContent=round===1?'Use a spreadsheet, no-code tool, script or AI assistant. Run the same input twice and compare the ticket lists.':'This includes Round 1 plus seven deliveries. Run your original method on the full history; record what changed.';
+ $('followUp').value='';$('review').value='';$('result').className='';$('result').textContent='Your result stays in this page. Nothing is submitted.';document.querySelector('details').open=false;
+ $('answer').textContent=round===1?'Follow up: T02, T03. Review: T04, T05. T01 stays closed at revision 2 despite its later-arriving older event. T02 appears once. T04 is blank and T05 is Pending. T06 is closed. Eight unique events, one repeated delivery.':'Follow up: T01, T05, T07. Review: none. T02 and T03 close, T01 reopens at revision 3, T04 closes, T05 opens and T07 opens once. Fourteen unique events, two repeated deliveries.';
+}
+$('round1').onclick=()=>{round=1;render()};$('round2').onclick=()=>{round=2;render()};
+$('check').onclick=()=>{const expected=ReplayExercise.evaluate(round===1?first:combined);const lines=[];let ok=true;for(const [field,label] of [['followUp','Follow up'],['review','Review']]){const c=ReplayExercise.compareIds($(field).value,expected[field]);ok=ok&&c.pass;lines.push(label+': '+(c.pass?'correct.':[['Missing',c.missing],['Unexpected',c.extra],['Repeated',c.duplicates]].filter(x=>x[1].length).map(x=>x[0]+' '+x[1].join(', ')).join('; ')));} $('result').className=ok?'good':'bad';$('result').textContent=(ok?'Both lists match the fixture.':'Check the differences below.')+'\n'+lines.join('\n')+(ok?'\nSave your method and actual output to compare on another day.':'');};
+$('download').onclick=()=>{const blob=new Blob([round===1?first:combined],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='workflow-replay-round-'+round+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+render();
+</script></body></html>

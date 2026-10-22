@@ -1,0 +1,8 @@
+event_id,ticket_id,revision,status
+E09,T02,2,Closed
+E10,T03,2,Closed
+E11,T07,1,Open
+E11,T07,1,Open
+E12,T01,3,Open
+E13,T04,2,Closed
+E14,T05,2,Open
