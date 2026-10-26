@@ -4,6 +4,8 @@ A nine-row exercise for spreadsheets, no-code tools and AI-assisted scripts. Cat
 
 **No API key, paid service or Discord membership is needed.** All data is fictional. This is an AI-assisted educational resource maintained for the **artificial intelligence** Discord community.
 
+**[Open the interactive exercise](https://easyguidetolearnai9.github.io/ai-workflow-lab/)** — try both rounds and check your ticket lists in your browser. You can also use the full text exercise below.
+
 ## Start here: find the bug without writing code
 
 Someone proposes this method:
@@ -100,6 +102,6 @@ On that next visit, reply to your own result with what you actually observed. Re
 
 ## Limits and reuse
 
-This tests batch state reconstruction. It does not prove exactly-once production writes, safe messaging, concurrency handling or any AI model's performance. The browser checker has no analytics, network requests, account system or saved answers; its optional Discord link opens an external site when clicked.
+This tests batch state reconstruction. It does not prove exactly-once production writes, safe messaging, concurrency handling or any AI model's performance. The checker does not save or send your answers and includes no analytics or account system. Its optional Discord link opens an external site. GitHub Pages logs visitor IP addresses for security; see [GitHub Pages data collection](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection).
 
 The original exercise, fictional data and code use the [MIT license](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution format.
